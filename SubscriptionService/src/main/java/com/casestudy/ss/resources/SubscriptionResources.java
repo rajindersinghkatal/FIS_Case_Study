@@ -1,5 +1,6 @@
 package com.casestudy.ss.resources;
 
+import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
@@ -8,7 +9,7 @@ import org.springframework.web.client.RestTemplate;
 public class SubscriptionResources {
 	
 	@Bean
-	//@LoadBalanced
+	@LoadBalanced
 	public RestTemplate getRestTemplate() {
 		//in case we want to give request timeout
 		/*

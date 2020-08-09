@@ -25,14 +25,9 @@ public class SubsriptionServiceController {
 		return subscriptionService.getAllSubscriptions();
 	}
 		
-	@PostMapping(value="/subscription/savesubscriptions",consumes=MediaType.APPLICATION_JSON_VALUE)
-	public String saveSubscriptions(@RequestBody List<Subscription> Subscriptions) {
-		return subscriptionService.saveSubscriptions(Subscriptions);
-	}
-		
-	@GetMapping(value="/subscription/getbook/{bookId}/{type}", produces=MediaType.APPLICATION_JSON_VALUE)
-	public Book getBook(@PathVariable String bookId,@PathVariable int type) {
-		return subscriptionService.getBook(bookId,type);
+	@PostMapping(value="/subscription/subscribe",consumes=MediaType.APPLICATION_JSON_VALUE)
+	public String subscribeBook(@RequestBody Subscription Subscription) {
+		return subscriptionService.subscribeBook(Subscription);
 	}
 	
 

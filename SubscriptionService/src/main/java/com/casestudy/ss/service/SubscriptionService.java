@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -12,6 +11,8 @@ import org.springframework.web.client.RestTemplate;
 import com.casestudy.ss.model.Book;
 import com.casestudy.ss.model.Subscription;
 import com.casestudy.ss.repository.SubscriptionRepository;
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixProperty;
 
 @Service
 public class SubscriptionService {
@@ -28,39 +29,40 @@ public class SubscriptionService {
 	@Autowired
 	private LoadBalancerClient loadBalancerClient;
 	
-	public String saveSubscriptions(List<Subscription> Subscriptions) {
-		subscriptionRepository.saveAll(Subscriptions);
-		return "All Books Saved Successfully";
-	}
-	
 	public List<Subscription> getAllSubscriptions(){
 		return subscriptionRepository.findAll();
 	}
-
-	public Book getBook(String bookId,int type) {
-		Book book=null;
-		switch(type) {
-
-		case 1:
-		 //to run case 1 remove @LoadBalanced Annotation from RestTemplate Bean
-		 ServiceInstance instance = loadBalancerClient.choose("BookService"); 
-		 String dynamicURI="http://"+instance.getHost()+":"+instance.getPort()+"/books/";
-		 book =restTemplate.getForObject(dynamicURI+bookId, Book.class);
-		 System.out.println(book.toString());
-		 return book;
-
-		case 2:
-			//to run case 2 add @LoadBalanced Annotation from RestTemplate Bean
-			String URL="http://BookService/books/"+bookId; 
-			book =restTemplate.getForObject(URL, Book.class); 
-			return book;
-
-		default:
-			//to run default case remove @LoadBalanced Annotation from RestTemplate Bean
-			book = restTemplate.getForObject(booksServicePath+bookId, Book.class);
-			return book;
-		}
+	
+	@HystrixCommand(fallbackMethod = "fallBack_subscribeBook", commandProperties = {  
+			  @HystrixProperty(name = "execution.isolation.thread.timeoutInMilliseconds", value = "1000"),
+			  @HystrixProperty(name ="circuitBreaker.requestVolumeThreshold", value="3"),
+			  @HystrixProperty(name ="circuitBreaker.sleepWindowInMilliseconds", value="10000"),
+			  @HystrixProperty(name ="circuitBreaker.errorThresholdPercentage", value="50"),
+			  @HystrixProperty(name ="metrics.rollingStats.timeInMilliseconds", value="10000")
+			  }) 
+	public String subscribeBook(Subscription subscription) {
 		
+		String result="";
+		String URL="http://BookService/books/"+subscription.getBookId();
+		Book book =restTemplate.getForObject(URL, Book.class);
+		
+		if(book.getCopiesAvailable()<book.getTotalCopies()) {
+			
+			URL="http://BookService/books/UpdateAvailability/"+subscription.getBookId()+"/"+1;
+			restTemplate.postForObject(URL,subscription,Book.class);
+			subscriptionRepository.save(subscription);
+			result="Book Subscribed Successfully";
+		
+		}else {
+			
+			result="NO Copies available for this book, Please try again later";
+		}
+		return result;
+	}
+
+	
+	public String fallBack_subscribeBook(Subscription subscription) {
+		return "Book Service is down right now!!! So Cannot subscribe the book!!";
 	}
 	
 }
