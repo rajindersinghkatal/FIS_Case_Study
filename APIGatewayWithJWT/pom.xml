@@ -9,7 +9,7 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.example</groupId>
-	<artifactId>APIGatewayDEMO</artifactId>
+	<artifactId>APIGatewayWithJWT</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>APIGatewayDEMO</name>
 	<description>Project for API_Gateway_Zuul</description>

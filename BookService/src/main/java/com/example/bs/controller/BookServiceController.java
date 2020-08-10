@@ -9,7 +9,6 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -65,8 +64,9 @@ public class BookServiceController {
 		return bookService.saveAllBooks(books);
 	}
 	
-	@PostMapping(value="/UpdateAvailability/{bookId}/{incremental_count}",produces=MediaType.APPLICATION_JSON_VALUE)
-	public Book updateBooksAvailabilty(@PathVariable String bookId,@PathVariable int incremental_count) {
-		return bookService.updateBooksAvailabilty(bookId,incremental_count);
+	//type can be subscribebook or returnbook
+	@PostMapping(value="/UpdateAvailability/{bookId}/{userActivity}",produces=MediaType.APPLICATION_JSON_VALUE)
+	public Book updateBooksAvailabilty(@PathVariable String bookId,@PathVariable String userActivity) {
+		return bookService.updateBooksAvailabilty(bookId,userActivity);
 	}
 }

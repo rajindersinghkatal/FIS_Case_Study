@@ -48,7 +48,7 @@ public class SubscriptionService {
 		
 		if(book.getCopiesAvailable()<book.getTotalCopies()) {
 			
-			URL="http://BookService/books/UpdateAvailability/"+subscription.getBookId()+"/"+1;
+			URL="http://BookService/books/UpdateAvailability/"+subscription.getBookId()+"/"+"subscribebook";
 			restTemplate.postForObject(URL,subscription,Book.class);
 			subscriptionRepository.save(subscription);
 			result="Book Subscribed Successfully";
@@ -64,5 +64,37 @@ public class SubscriptionService {
 	public String fallBack_subscribeBook(Subscription subscription) {
 		return "Book Service is down right now!!! So Cannot subscribe the book!!";
 	}
+	
+	@HystrixCommand(fallbackMethod = "fallBack_returnBook", commandProperties = {  
+			  @HystrixProperty(name = "execution.isolation.thread.timeoutInMilliseconds", value = "1000"),
+			  @HystrixProperty(name ="circuitBreaker.requestVolumeThreshold", value="3"),
+			  @HystrixProperty(name ="circuitBreaker.sleepWindowInMilliseconds", value="10000"),
+			  @HystrixProperty(name ="circuitBreaker.errorThresholdPercentage", value="50"),
+			  @HystrixProperty(name ="metrics.rollingStats.timeInMilliseconds", value="10000")
+			  }) 
+	public String returnBook(Subscription subscription) {
+		
+		String result="";
+		String URL="http://BookService/books/"+subscription.getBookId();
+		Book book =restTemplate.getForObject(URL, Book.class);
+		
+		if(book.getCopiesAvailable()<book.getTotalCopies()) {
+			
+			URL="http://BookService/books/UpdateAvailability/"+subscription.getBookId()+"/"+"returnbook";
+			restTemplate.postForObject(URL,subscription,Book.class);
+			subscriptionRepository.save(subscription);
+			result="Book Subscribed Successfully";
+		
+		}else {
+			
+			result="NO Copies available for this book, Please try again later";
+		}
+		return result;
+	}
+	
+	public String fallBack_returnBook(Subscription subscription) {
+		return "Book Service is down right now!!! So Cannot return the book!!";
+	}
+
 	
 }

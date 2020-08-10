@@ -30,6 +30,11 @@ public class SubsriptionServiceController {
 		return subscriptionService.subscribeBook(Subscription);
 	}
 	
+	@PostMapping(value="/subscription/returnbook",consumes=MediaType.APPLICATION_JSON_VALUE)
+	public String returnBook(@RequestBody Subscription Subscription) {
+		return subscriptionService.subscribeBook(Subscription);
+	}
+	
 
 
 }
