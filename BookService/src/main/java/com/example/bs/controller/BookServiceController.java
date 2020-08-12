@@ -30,10 +30,10 @@ public class BookServiceController {
 	@Value("${greeting:greetingalternate}")
 	private String greet;
 	
-	@Value("${greeting.message:Hello this is default message because config servr is not running}")
+	@Value("${greeting.message:Hello this is default message because config server is not running}")
 	private String greetingmessage;
 	
-	@Value("${greeting.name:Hello this is default name because config servr is not running}")
+	@Value("${greeting.name:Hello this is default name because config server is not running}")
 	private String greetname;
 	
 
@@ -64,9 +64,8 @@ public class BookServiceController {
 		return bookService.saveAllBooks(books);
 	}
 	
-	//type can be subscribebook or returnbook
-	@PostMapping(value="/UpdateAvailability/{bookId}/{userActivity}",produces=MediaType.APPLICATION_JSON_VALUE)
-	public Book updateBooksAvailabilty(@PathVariable String bookId,@PathVariable String userActivity) {
-		return bookService.updateBooksAvailabilty(bookId,userActivity);
+	@PostMapping(value="/UpdateAvailability/{bookId}/{incremental_count}",produces=MediaType.APPLICATION_JSON_VALUE)
+	public Book updateBooksAvailabilty(@PathVariable String bookId,@PathVariable int incremental_count) {
+		return bookService.updateBooksAvailabilty(bookId,incremental_count);
 	}
 }

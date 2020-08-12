@@ -10,6 +10,7 @@ import org.springframework.web.client.RestTemplate;
 
 import com.casestudy.ss.model.Book;
 import com.casestudy.ss.model.Subscription;
+import com.casestudy.ss.repository.SubscriptionDBQueries;
 import com.casestudy.ss.repository.SubscriptionRepository;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixProperty;
@@ -22,6 +23,9 @@ public class SubscriptionService {
 	
 	@Autowired
 	SubscriptionRepository subscriptionRepository;
+	
+	@Autowired
+	SubscriptionDBQueries subscriptionDBQueries;
 	
 	@Autowired
 	RestTemplate restTemplate;
@@ -46,11 +50,12 @@ public class SubscriptionService {
 		String URL="http://BookService/books/"+subscription.getBookId();
 		Book book =restTemplate.getForObject(URL, Book.class);
 		
-		if(book.getCopiesAvailable()<book.getTotalCopies()) {
+		if(book.getCopiesAvailable()>0 && book.getCopiesAvailable()<=book.getTotalCopies()) {
 			
-			URL="http://BookService/books/UpdateAvailability/"+subscription.getBookId()+"/"+"subscribebook";
+			URL="http://BookService/books/UpdateAvailability/"+subscription.getBookId()+"/"+"-1";
 			restTemplate.postForObject(URL,subscription,Book.class);
 			subscriptionRepository.save(subscription);
+			
 			result="Book Subscribed Successfully";
 		
 		}else {
@@ -74,20 +79,23 @@ public class SubscriptionService {
 			  }) 
 	public String returnBook(Subscription subscription) {
 		
+		Subscription subscriptionFromDB=subscriptionDBQueries.findByBookIdAndSubscriberName(subscription.getBookId(),subscription.getSubscriberName()).get(0);
 		String result="";
 		String URL="http://BookService/books/"+subscription.getBookId();
 		Book book =restTemplate.getForObject(URL, Book.class);
 		
+		
 		if(book.getCopiesAvailable()<book.getTotalCopies()) {
 			
-			URL="http://BookService/books/UpdateAvailability/"+subscription.getBookId()+"/"+"returnbook";
+			URL="http://BookService/books/UpdateAvailability/"+subscription.getBookId()+"/"+"1";
 			restTemplate.postForObject(URL,subscription,Book.class);
-			subscriptionRepository.save(subscription);
-			result="Book Subscribed Successfully";
+			subscriptionFromDB.setDateReturned(subscription.getDateReturned());
+			subscriptionRepository.save(subscriptionFromDB);
+			result="Book Returned Successfully";
 		
 		}else {
 			
-			result="NO Copies available for this book, Please try again later";
+			result="Cannot Return book right now, Please try again later";
 		}
 		return result;
 	}

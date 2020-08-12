@@ -8,6 +8,8 @@ import org.springframework.web.client.RestTemplate;
 @Component
 public class SubscriptionResources {
 	
+	
+	
 	@Bean
 	@LoadBalanced
 	public RestTemplate getRestTemplate() {
@@ -23,5 +25,9 @@ public class SubscriptionResources {
 		return new RestTemplate();
 	}
 	
+	
+	
+	
+
 
 }

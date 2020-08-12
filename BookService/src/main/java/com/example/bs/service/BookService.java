@@ -35,34 +35,29 @@ public class BookService {
 		return "All Books Saved Successfully";
 	}
 
-	public Book updateBooksAvailabilty(String bookId, String userActivity) {
+	public Book updateBooksAvailabilty(String bookId,int incremental_count) {
 
 		Book book = bookrepository.findById(bookId).get();
-
-		if (userActivity.equalsIgnoreCase("subscribebook")) {
-
+				
+		if(incremental_count<0) {
+			
 			int copiesavailable = book.getCopiesAvailable() - 1;
 			if (copiesavailable <= book.getTotalCopies())
 				book.setCopiesAvailable(copiesavailable);
 			bookrepository.save(book);
 			return book;
-
-		} else if (userActivity.equalsIgnoreCase("returnbook")) {
-			System.out.println("here");
+			
+		}else {
+			
 			int copiesavailable = book.getCopiesAvailable() + 1;
 			if (copiesavailable <= book.getTotalCopies())
 				book.setCopiesAvailable(copiesavailable);
 			bookrepository.save(book);
-
-			this.producer.sendMessage(book.getBookName() + "Book is now available please go ahead to subscribe it");
-
-			
-			
+			this.producer.sendMessage(book.toString()+ " is now available please go ahead to subscribe it");
 			return book;
-		} else {
-			return book;
+			
 		}
 
-	}
+	}	
 
 }

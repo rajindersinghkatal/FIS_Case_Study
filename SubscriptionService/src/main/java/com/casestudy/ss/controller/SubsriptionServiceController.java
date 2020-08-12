@@ -26,13 +26,13 @@ public class SubsriptionServiceController {
 	}
 		
 	@PostMapping(value="/subscription/subscribe",consumes=MediaType.APPLICATION_JSON_VALUE)
-	public String subscribeBook(@RequestBody Subscription Subscription) {
-		return subscriptionService.subscribeBook(Subscription);
+	public String subscribeBook(@RequestBody Subscription subscription) {
+		return subscriptionService.subscribeBook(subscription);
 	}
 	
-	@PostMapping(value="/subscription/returnbook",consumes=MediaType.APPLICATION_JSON_VALUE)
-	public String returnBook(@RequestBody Subscription Subscription) {
-		return subscriptionService.subscribeBook(Subscription);
+	@PostMapping(value="/subscription/returns",consumes=MediaType.APPLICATION_JSON_VALUE)
+	public String returnBook(@RequestBody Subscription subscription) {
+		return subscriptionService.returnBook(subscription);
 	}
 	
 
