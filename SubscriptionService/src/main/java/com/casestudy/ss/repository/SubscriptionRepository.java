@@ -6,3 +6,6 @@ import com.casestudy.ss.model.Subscription;
 public interface SubscriptionRepository extends MongoRepository<Subscription,String>{
 }
 
+
+
+

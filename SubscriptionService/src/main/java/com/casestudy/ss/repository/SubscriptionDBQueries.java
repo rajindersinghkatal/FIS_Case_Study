@@ -1,11 +1,14 @@
 package com.casestudy.ss.repository;
 
 import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Component;
+
+import com.casestudy.ss.model.BookUser;
 import com.casestudy.ss.model.Subscription;
 
 @Component
@@ -15,16 +18,24 @@ public class SubscriptionDBQueries {
 	@Autowired
 	MongoTemplate mongoTemplate;
 	
-	public List<Subscription> findByBookIdAndSubscriberName(String bookId,String subscriberName){
+	public List<Subscription> findByBookIdAndSubscriberName(Subscription subscription){
+		return mongoTemplate.find(getQuery(subscription), Subscription.class);
+	}
+	
+	public boolean checkSubscriptionAlreadyExistInDBWithoutReturn(Subscription subscription) {
+		if(mongoTemplate.find(getQuery(subscription), Subscription.class).size()==0){return true;}
+		return false;
+	}
+	
+	private Query getQuery(Subscription subscription) {
 		Query query = new Query();
-		//query.addCriteria(Criteria.where("bookId").is(bookId));
-		query.addCriteria(
+		return query.addCriteria(
 			    new Criteria().andOperator(
-			        Criteria.where("bookId").is(bookId),
-			        Criteria.where("subscriberName").is(subscriberName)
-			    )
-			);
-		return mongoTemplate.find(query, Subscription.class);
+				        Criteria.where("bookId").is(subscription.getBookId()),
+				        Criteria.where("subscriberName").is(subscription.getSubscriberName()),
+				        Criteria.where("dateReturned").exists(false)
+				    )
+				);
 	}
 
 }

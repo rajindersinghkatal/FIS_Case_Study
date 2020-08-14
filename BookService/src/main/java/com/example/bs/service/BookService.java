@@ -53,7 +53,10 @@ public class BookService {
 			if (copiesavailable <= book.getTotalCopies())
 				book.setCopiesAvailable(copiesavailable);
 			bookrepository.save(book);
-			this.producer.sendMessage(book.toString()+ " is now available please go ahead to subscribe it");
+			if(copiesavailable==1) {
+				System.out.println("############sending message::1#########");
+				this.producer.sendMessage(book.getBookId());
+			}
 			return book;
 			
 		}

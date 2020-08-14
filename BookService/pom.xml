@@ -34,6 +34,11 @@
 			<scope>runtime</scope>
 			<optional>true</optional>
 		</dependency>
+		<!-- As we’ll be using Java 8 date and time classes, we first need to add a Maven dependency for the Jackson JSR310 converters. They take care of converting Java 8 date and time classes to JSON representation using the @JsonFormat annotation -->
+		<dependency>
+   			<groupId>com.fasterxml.jackson.datatype</groupId>
+   			<artifactId>jackson-datatype-jsr310</artifactId>
+		</dependency>
 		
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
