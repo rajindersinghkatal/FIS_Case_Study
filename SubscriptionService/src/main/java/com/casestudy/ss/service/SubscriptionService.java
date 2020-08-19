@@ -2,10 +2,11 @@ package com.casestudy.ss.service;
 
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -18,6 +19,8 @@ import com.netflix.hystrix.contrib.javanica.annotation.HystrixProperty;
 
 @Service
 public class SubscriptionService {
+	
+	private static final Logger logger=LoggerFactory.getLogger(SubscriptionService.class.getName());
 	
 	@Autowired
 	private Producer producer;
@@ -54,13 +57,17 @@ public class SubscriptionService {
 		String URL="http://BookService/books/"+subscription.getBookId();
 		Book book =restTemplate.getForObject(URL, Book.class);
 		
+		logger.info("Book Service called for getting book information "+book.toString());
+		
 		if(book.getCopiesAvailable()>0 && book.getCopiesAvailable()<=book.getTotalCopies()) {
 					
 			if(subscriptionDBQueries.checkSubscriptionAlreadyExistInDBWithoutReturn(subscription)) {
 					URL="http://BookService/books/UpdateAvailability/"+subscription.getBookId()+"/"+"-1";
 					restTemplate.postForObject(URL,subscription,Book.class);
+					logger.info("Book Service called for decrementing copies available for bookId:"+book.getBookId());
 					subscriptionRepository.save(subscription);
 					result="Book Subscribed Successfully";
+					
 				}
 				else {
 					result="Book Already Subscribed";
@@ -72,10 +79,12 @@ public class SubscriptionService {
 			}
 			result="NO Copies available for this book, Please try again later";
 		}
+		logger.info("result:"+result);
 		return result;
 	}
 
 	public String fallBack_subscribeBook(Subscription subscription) {
+		logger.info("Book Service is down right now!!! So Cannot subscribe the book!!");
 		return "Book Service is down right now!!! So Cannot subscribe the book!!";
 	}
 
@@ -92,10 +101,13 @@ public class SubscriptionService {
 		String URL = "http://BookService/books/" + subscription.getBookId();
 		Book book = restTemplate.getForObject(URL, Book.class);
 
+		logger.info("Book Service called for getting book information "+book.toString());
+		
 		if (book.getCopiesAvailable() < book.getTotalCopies()) {
 
 			URL = "http://BookService/books/UpdateAvailability/" + subscription.getBookId() + "/" + "1";
 			restTemplate.postForObject(URL, subscription, Book.class);
+			logger.info("Book Service called for incrementing copies available for bookId:"+book.getBookId());
 			subscriptionFromDB.setDateReturned(subscription.getDateReturned());
 			subscriptionRepository.save(subscriptionFromDB);
 			result = "Book Returned Successfully";
@@ -104,10 +116,12 @@ public class SubscriptionService {
 
 			result = "Book Already Returned";
 		}
+		logger.info("result:"+result);
 		return result;
 	}
 
 	public String fallBack_returnBook(Subscription subscription) {
+		logger.info("Book Service is down right now!!! So Cannot return the book!!");
 		return "Book Service is down right now!!! So Cannot return the book!!";
 	}
 
